@@ -7,6 +7,7 @@ import com.bruynhuis.galago.resource.ModelManager;
 import com.bruynhuis.galago.resource.ScreenManager;
 import com.bruynhuis.galago.resource.SoundManager;
 import com.bruynhuis.galago.resource.TextureManager;
+import com.bruynhuis.galago.ui.FontStyle;
 import za.co.bruynhuis.escapedeep.screens.PlayScreen;
 
 /**
@@ -20,7 +21,7 @@ import za.co.bruynhuis.escapedeep.screens.PlayScreen;
 public class MainApplication extends Base2DApplication {
 
     public MainApplication() {
-        super("Escape the deep", 1280, 720, "escapethedeep.save", null, null, false);
+        super("Escape the deep", 1280, 720, "escapethedeep.save", "Interface/Fonts/GameBoy.ttf", null, false);
     }
 
     public static void main(String[] args) {
@@ -49,10 +50,13 @@ public class MainApplication extends Base2DApplication {
 
     @Override
     public void initModelManager(ModelManager modelManager) {
-        modelManager.loadMaterial("Materials/player.j3m");
-        modelManager.loadMaterial("Materials/ground.j3m");
-        modelManager.loadMaterial("Materials/ocean.j3m");
-        modelManager.loadMaterial("Materials/platform.j3m");
+        
+        modelManager.loadMaterial("Materials/tileset.j3m");
+//        modelManager.loadMaterial("Materials/player.j3m");
+//        modelManager.loadMaterial("Materials/banana.j3m");
+//        modelManager.loadMaterial("Materials/ground.j3m");
+//        modelManager.loadMaterial("Materials/ocean.j3m");
+//        modelManager.loadMaterial("Materials/platform.j3m");
         modelManager.loadMaterial("Materials/lightning.j3m");
         
         modelManager.loadModel("Models/rain.j3o");
@@ -61,6 +65,16 @@ public class MainApplication extends Base2DApplication {
 
     @Override
     protected void initSound(SoundManager soundManager) {
+        soundManager.loadMusic("background", "Sounds/SoulfulExpansion.ogg");
+        
+        soundManager.loadSoundFx("button", "Sounds/button.ogg");
+        soundManager.loadSoundFx("thunder", "Sounds/thunder.ogg");
+        soundManager.loadSoundFx("walk", "Sounds/walk.ogg");
+        soundManager.loadSoundFx("jump", "Sounds/jump.ogg");
+        soundManager.loadSoundFx("pickup", "Sounds/pickup.ogg");
+        soundManager.loadSoundFx("gameover", "Sounds/gameover.ogg");
+        soundManager.loadSoundFx("shoot", "Sounds/shoot.ogg");
+        
     }
 
     @Override
@@ -69,10 +83,13 @@ public class MainApplication extends Base2DApplication {
 
     @Override
     protected void initTextures(TextureManager textureManager) {
+        textureManager.setPixelated(true);
+        
     }
 
     @Override
     protected void initFonts(FontManager fontManager) {
+        fontManager.loadFont(new FontStyle(26));
     }
 
 }

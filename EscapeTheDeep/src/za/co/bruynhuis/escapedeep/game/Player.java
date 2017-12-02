@@ -13,12 +13,16 @@ import com.bruynhuis.galago.games.simplephysics2d.SimplePhysics2DGame;
 import com.bruynhuis.galago.games.simplephysics2d.SimplePhysics2DPlayer;
 import com.bruynhuis.galago.sprite.AnimatedSprite;
 import com.bruynhuis.galago.sprite.Animation;
+import com.bruynhuis.galago.sprite.AnimationListener;
+import com.bruynhuis.galago.sprite.Sprite;
 import com.bruynhuis.galago.sprite.physics.PhysicsCollisionListener;
 import com.bruynhuis.galago.sprite.physics.PhysicsSpace;
 import com.bruynhuis.galago.sprite.physics.PhysicsTickListener;
 import com.bruynhuis.galago.sprite.physics.RigidBodyControl;
 import com.bruynhuis.galago.sprite.physics.shape.BoxCollisionShape;
+import com.bruynhuis.galago.sprite.physics.shape.CircleCollisionShape;
 import com.bruynhuis.galago.sprite.physics.shape.CollisionShape;
+import com.bruynhuis.galago.util.Debug;
 import com.bruynhuis.galago.util.Timer;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
@@ -26,6 +30,7 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
+import za.co.bruynhuis.escapedeep.control.BulletControl;
 
 /**
  *
@@ -35,12 +40,16 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
     private AnimatedSprite sprite;
     private RigidBodyControl rigidBodyControl;
-    private float jumpForce = 14.0f;
+    private float jumpForce = 20.0f;
     private boolean onGround = false;
     private boolean left, right = false;
     private float moveSpeed = 4f;
     private Timer jumpDelayTimer = new Timer(0.5f);
     private float gravity = 2.5f;
+    private Timer walkTimer = new Timer(15f);
+    private boolean walking = false;
+    private boolean hasBullet = false;
+    private boolean shooting = false;
 
     public Player(SimplePhysics2DGame simplePhysics2DGame) {
         super(simplePhysics2DGame);
@@ -50,17 +59,33 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
     protected void init() {
         lives = 0;
 
-        sprite = new AnimatedSprite(Platform2DGame.TYPE_PLAYER, 1.2f, 1.2f, 4, 3, 10);
-        sprite.setMaterial(game.getBaseApplication().getModelManager().getMaterial("Materials/player.j3m"));
+        sprite = new AnimatedSprite(Platform2DGame.TYPE_PLAYER, 1.2f, 1.2f, 8, 8, 10);
+        sprite.setMaterial(game.getBaseApplication().getModelManager().getMaterial("Materials/tileset.j3m"));
         game.fixTexture(sprite.getMaterial().getTextureParam("ColorMap"));
         sprite.setQueueBucket(RenderQueue.Bucket.Transparent);
         sprite.move(0, 0, 0f);
 
-        sprite.addAnimation(new Animation("idle", 0, 4, 10));
-        sprite.addAnimation(new Animation("walk", 5, 9, 10));
-        sprite.addAnimation(new Animation("jump", 10, 10, 10));
+        sprite.addAnimation(new Animation("idle", 0, 2, 20));
+        sprite.addAnimation(new Animation("walk", 3, 5, 6));
+        sprite.addAnimation(new Animation("jump", 3, 3, 10));
+        sprite.addAnimation(new Animation("attack", 6, 8, 10));
+        sprite.addAnimationListener(new AnimationListener() {
 
-        rigidBodyControl = new RigidBodyControl(new BoxCollisionShape(0.6f, 1f), 1f);
+            public void animationStart(Animation animation) {
+            }
+
+            public void animationDone(Animation animation) {
+                if (animation.getName().equals("attack")) {
+                    if (onGround) {
+                        sprite.play("idle", true, false, true); 
+                        shooting = false;
+                    }
+                    
+                }
+            }
+        });
+
+        rigidBodyControl = new RigidBodyControl(new BoxCollisionShape(0.8f, 1.1f), 1f);
         rigidBodyControl.setRestitution(0f);
         rigidBodyControl.setFriction(0.1f);
         playerNode.addControl(rigidBodyControl);
@@ -87,7 +112,12 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
                     }
 
-                    
+                    if (onGround && (left || right)) {
+                        walking = true;
+                    } else {
+                        walking = false;
+                    }
+
                     if (left && !right) {
                         sprite.flipHorizontal(true);
 
@@ -107,10 +137,19 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
                         }
 
                     } else {
-                        if (onGround) {
-                            sprite.play("idle", true, false, true);
+                        if (onGround && !shooting) {
+                            sprite.play("idle", true, false, true); 
+                            
                         } else {
                             sprite.play("jump", true, false, true);
+                        }
+                    }
+
+                    if (walking) {
+                        walkTimer.update(tpf);
+                        if (walkTimer.finished()) {
+                            game.getBaseApplication().getSoundManager().playSound("walk");
+                            walkTimer.reset();
                         }
                     }
                 }
@@ -163,6 +202,7 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
     public void jump(float extrajumpForcePer) {
 
         if (onGround && !game.isGameOver()) {
+            game.getBaseApplication().getSoundManager().playSound("jump");
             rigidBodyControl.clearForces();
             float jumpAmount = jumpForce * extrajumpForcePer;
             rigidBodyControl.applyImpulse(0, jumpAmount);
@@ -208,6 +248,7 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
     public void start() {
         super.start(); //To change body of generated methods, choose Tools | Templates.
         jumpDelayTimer.start();
+        walkTimer.start();
 
     }
 
@@ -221,7 +262,7 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
     @Override
     protected float getSize() {
-        return sprite.getWidth();
+        return sprite.getWidth() * 0.6f;
     }
 
     public void doLevelCompleteAction() {
@@ -245,10 +286,10 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
         if (left && !right) {
             rigidBodyControl.move(-tpf * moveSpeed, 0);
-           
+
         } else if (!left && right) {
             rigidBodyControl.move(tpf * moveSpeed, 0);
-            
+
         }
 
         //Correct the rotation so that the player don;t twist
@@ -257,4 +298,53 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
         rigidBodyControl.getBody().getTransform().setRotation(0);
 
     }
+
+    public void attack() {
+        Debug.log("Attack");
+
+        if (isFacingForward()) {
+            //Shoot right
+            shootBullet(new Vector3f(1, 0, 0));
+        } else {
+            //shoot left
+            shootBullet(new Vector3f(-1, 0, 0));
+        }
+
+        hasBullet = false;
+        shooting = true;
+    }
+
+    /**
+     * Initialize a bullet and shoots it in a direction.
+     *
+     * @param direction
+     */
+    private void shootBullet(Vector3f direction) {
+        game.getBaseApplication().getSoundManager().playSound("shoot");
+
+        Sprite bulletsprite = new Sprite(Game.TYPE_BULLET, 0.5f, 0.5f, 8, 8, 27);
+        bulletsprite.setMaterial(game.getBaseApplication().getModelManager().getMaterial("Materials/tileset.j3m"));
+        game.fixTexture(bulletsprite.getMaterial().getTextureParam("ColorMap"));
+
+        RigidBodyControl bodyControl = new RigidBodyControl(new CircleCollisionShape(0.1f), 0.1f);
+        bodyControl.setRestitution(0);
+        bodyControl.setFriction(1f);
+        bodyControl.getBody().setGravityScale(0.01f);
+        bulletsprite.addControl(bodyControl);
+        bodyControl.setPhysicLocation(getPosition().add(direction.x * 0.6f, direction.y * 0.6f, 0));
+        game.addBullet(bodyControl);
+        bulletsprite.addControl(new BulletControl((Game) game, bulletsprite, 8, direction));
+        
+        sprite.play("attack", false, false, true);
+    }
+
+    public boolean isHasBullet() {
+        return hasBullet;
+    }
+
+    public void setHasBullet(boolean hasBullet) {
+        this.hasBullet = hasBullet;
+    }
+    
+    
 }

@@ -7,6 +7,7 @@ package za.co.bruynhuis.escapedeep.game;
 import com.bruynhuis.galago.app.Base2DApplication;
 import com.bruynhuis.galago.control.effects.WaveControl;
 import com.bruynhuis.galago.games.simplephysics2d.SimplePhysics2DGame;
+import com.bruynhuis.galago.games.simplephysics2d.SimplePhysics2DPlayer;
 import com.bruynhuis.galago.sprite.Sprite;
 import com.bruynhuis.galago.sprite.physics.RigidBodyControl;
 import com.bruynhuis.galago.sprite.physics.shape.BoxCollisionShape;
@@ -21,6 +22,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import za.co.bruynhuis.escapedeep.control.OceanControl;
+import za.co.bruynhuis.escapedeep.control.PickupControl;
 import za.co.bruynhuis.escapedeep.control.PlatformControl;
 
 /**
@@ -35,6 +37,7 @@ public class Game extends SimplePhysics2DGame {
     private Timer nextLevelTimer = new Timer(100);
     private boolean canAddRow = true;
     private float lastHeight;
+    private Timer thunderTimer = new Timer(200);
 
     public Game(Base2DApplication baseApplication, Node rootNode) {
         super(baseApplication, rootNode);
@@ -60,10 +63,17 @@ public class Game extends SimplePhysics2DGame {
                 if (isStarted() && !isGameOver() && !isPaused()) {
 //                    Debug.log("Last platform height: " + lastHeight);
 
-                    nextLevelTimer.update(tpf);
-                    
+                    nextLevelTimer.update(tpf);                    
                     if (nextLevelTimer.finished()) {
                         canAddRow = true;
+                        
+                    }
+                    
+                    thunderTimer.update(tpf);
+                    if (thunderTimer.finished()) {
+                        thunderTimer.setMaxTime(FastMath.nextRandomInt(300, 600));
+//                        baseApplication.getSoundManager().playSound("thunder");
+                        thunderTimer.reset();
                         
                     }
                 }
@@ -73,6 +83,12 @@ public class Game extends SimplePhysics2DGame {
             protected void controlRender(RenderManager rm, ViewPort vp) {
             }
         });
+    }
+
+    @Override
+    public void start(SimplePhysics2DPlayer physicsPlayer) {
+        super.start(physicsPlayer);
+        thunderTimer.start();
     }
 
     private void addGround(float x, float y) {
@@ -90,26 +106,19 @@ public class Game extends SimplePhysics2DGame {
     }
     
     private void loadSky(float x, float y) {
-        Sprite sky = new Sprite("sky", 26, 20);
+        Sprite sky = new Sprite("sky", 26, 18);
         sky.setMaterial(baseApplication.getModelManager().getMaterial("Materials/lightning.j3m"));
         sky.move(x, y, -10f);
         addSky(sky, 1);
     }
 
     private void loadOcean(float x, float y) {
-//        oceanSprite = new Sprite("ground", levelWidth * 2, 20);
-//        oceanSprite.setMaterial(baseApplication.getModelManager().getMaterial("Materials/ocean.j3m"));
-//        oceanSprite.setQueueBucket(RenderQueue.Bucket.Transparent);
-//        oceanSprite.move(x, y, 1f);
-//        addVegetation(oceanSprite);
-//        oceanSprite.addControl(new OceanControl(this, 10));
-        
         Spatial ocean = baseApplication.getAssetManager().loadModel("Models/water.j3o");
         ocean.scale(3.3f);
-//        ocean.setQueueBucket(RenderQueue.Bucket.Transparent);
+        ocean.setQueueBucket(RenderQueue.Bucket.Transparent);
         WaveControl waveControl = new WaveControl("Textures/water.png", 3, 4, 0.04f);
         ocean.addControl(waveControl);
-        waveControl.getMaterial().getAdditionalRenderState().setBlendMode(RenderState.BlendMode.PremultAlpha);
+        waveControl.getMaterial().getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
         waveControl.getMaterial().getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
 
         ocean.addControl(new OceanControl(this, 10));
@@ -119,8 +128,8 @@ public class Game extends SimplePhysics2DGame {
     }
 
     private void addPlatform(float x, float y) {
-        Sprite sprite = new Sprite("platform", 1f, 1f);
-        sprite.setMaterial(baseApplication.getModelManager().getMaterial("Materials/platform.j3m"));
+        Sprite sprite = new Sprite("platform", 1f, 1f, 8, 8, 32);
+        sprite.setMaterial(baseApplication.getModelManager().getMaterial("Materials/tileset.j3m"));
 
         sprite.setQueueBucket(RenderQueue.Bucket.Transparent);
         sprite.move(x, y, 0f);
@@ -131,9 +140,30 @@ public class Game extends SimplePhysics2DGame {
         rigidBodyControl.setPhysicLocation(x, y);
         sprite.addControl(rigidBodyControl);
 
-        sprite.addControl(new PlatformControl(this, 6));
+        sprite.addControl(new PlatformControl(this, 8));
 
         addTerrain(sprite);
+    }
+    
+    private void addBanana(float x, float y) {
+        Sprite sprite = new Sprite("pickup", 0.6f, 0.6f, 8, 8, 29);
+        sprite.setMaterial(baseApplication.getModelManager().getMaterial("Materials/tileset.j3m"));
+        sprite.move(x, y, 0f);
+
+        sprite.addControl(new PickupControl(this, 8));
+
+        addPickup(sprite);
+    }
+    
+    private void addBullet(float x, float y) {
+        Sprite sprite = new Sprite("pickup", 0.4f, 0.4f, 8, 8, 27);
+        sprite.setUserData("type", "bullet");
+        sprite.setMaterial(baseApplication.getModelManager().getMaterial("Materials/tileset.j3m"));
+        sprite.move(x, y, 0f);
+
+        sprite.addControl(new PickupControl(this, 8));
+
+        addPickup(sprite);
     }
 
     private void addDoor(float x, float y) {
@@ -158,16 +188,31 @@ public class Game extends SimplePhysics2DGame {
 
         int startIndex = -(int) (levelWidth * 0.5f);
         int endIndex = (int) (levelWidth * 0.5f);
-        int doorIndex = FastMath.nextRandomInt(startIndex, endIndex);
+        int doorIndex1 = FastMath.nextRandomInt(startIndex, endIndex);
+        int doorIndex2 = FastMath.nextRandomInt(startIndex, endIndex);
 
         for (int i = startIndex; i <= endIndex; i++) {
 
-            if (i == doorIndex) {
+            if (i == doorIndex1 || i == doorIndex2) {
                 addDoor(i, y);
             } else {
                 addPlatform(i, y);
             }
 
+        }
+        
+        //Add pickup
+        for (int i = startIndex; i <= endIndex; i++) {
+            
+            if (FastMath.nextRandomInt(0, 10) > 8) {
+                if (FastMath.nextRandomInt(0, 10) > 5) {
+                    addBullet(i, y + 1f);
+                } else {
+                    addBanana(i, y + FastMath.nextRandomInt(1, 3));
+                }
+                
+            }
+            
         }
 
         lastHeight = y;
