@@ -63,6 +63,7 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
         rigidBodyControl.setPhysicLocation(new Vector3f(startPosition.x, startPosition.y, 0f));
         rigidBodyControl.setGravityScale(gravity);
 
+        loadWeather();
 
         playerNode.addControl(new AbstractControl() {
             @Override
@@ -92,6 +93,12 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
         game.getBaseApplication().getDyn4jAppState().getPhysicsSpace().addPhysicsCollisionListener(this);
         game.getBaseApplication().getDyn4jAppState().getPhysicsSpace().addPhysicsTickListener(this);
 
+    }
+    
+    private void loadWeather() {
+        Spatial rain = game.getBaseApplication().getModelManager().getModel("Models/rain.j3o");
+        rain.setLocalTranslation(0, 10, 2);
+        playerNode.attachChild(rain);
     }
 
     @Override

@@ -54,6 +54,8 @@ public class MainApplication extends Base2DApplication {
         modelManager.loadMaterial("Materials/ocean.j3m");
         modelManager.loadMaterial("Materials/platform.j3m");
         modelManager.loadMaterial("Materials/lightning.j3m");
+        
+        modelManager.loadModel("Models/rain.j3o");
                 
     }
 

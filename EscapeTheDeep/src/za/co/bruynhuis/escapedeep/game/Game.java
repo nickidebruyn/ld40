@@ -5,17 +5,20 @@
 package za.co.bruynhuis.escapedeep.game;
 
 import com.bruynhuis.galago.app.Base2DApplication;
+import com.bruynhuis.galago.control.effects.WaveControl;
 import com.bruynhuis.galago.games.simplephysics2d.SimplePhysics2DGame;
 import com.bruynhuis.galago.sprite.Sprite;
 import com.bruynhuis.galago.sprite.physics.RigidBodyControl;
 import com.bruynhuis.galago.sprite.physics.shape.BoxCollisionShape;
 import com.bruynhuis.galago.util.Timer;
+import com.jme3.material.RenderState;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import za.co.bruynhuis.escapedeep.control.OceanControl;
 import za.co.bruynhuis.escapedeep.control.PlatformControl;
@@ -94,13 +97,25 @@ public class Game extends SimplePhysics2DGame {
     }
 
     private void loadOcean(float x, float y) {
-        oceanSprite = new Sprite("ground", levelWidth * 2, 20);
-        oceanSprite.setMaterial(baseApplication.getModelManager().getMaterial("Materials/ocean.j3m"));
-        oceanSprite.setQueueBucket(RenderQueue.Bucket.Transparent);
-        oceanSprite.move(x, y, 1f);
-        addVegetation(oceanSprite);
+//        oceanSprite = new Sprite("ground", levelWidth * 2, 20);
+//        oceanSprite.setMaterial(baseApplication.getModelManager().getMaterial("Materials/ocean.j3m"));
+//        oceanSprite.setQueueBucket(RenderQueue.Bucket.Transparent);
+//        oceanSprite.move(x, y, 1f);
+//        addVegetation(oceanSprite);
+//        oceanSprite.addControl(new OceanControl(this, 10));
+        
+        Spatial ocean = baseApplication.getAssetManager().loadModel("Models/water.j3o");
+        ocean.scale(3.3f);
+//        ocean.setQueueBucket(RenderQueue.Bucket.Transparent);
+        WaveControl waveControl = new WaveControl("Textures/water.png", 3, 4, 0.04f);
+        ocean.addControl(waveControl);
+        waveControl.getMaterial().getAdditionalRenderState().setBlendMode(RenderState.BlendMode.PremultAlpha);
+        waveControl.getMaterial().getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
 
-        oceanSprite.addControl(new OceanControl(this, 10));
+        ocean.addControl(new OceanControl(this, 10));
+        
+        ocean.move(x, y, 1f);
+        levelNode.attachChild(ocean);
     }
 
     private void addPlatform(float x, float y) {

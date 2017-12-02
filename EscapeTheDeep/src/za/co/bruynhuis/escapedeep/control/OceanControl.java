@@ -4,7 +4,6 @@
  */
 package za.co.bruynhuis.escapedeep.control;
 
-import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.control.AbstractControl;
@@ -30,17 +29,20 @@ public class OceanControl extends AbstractControl {
         
         if (game.isStarted() && !game.isGameOver() && !game.isPaused()) {
             
-            spatial.move(0, tpf*moveSpeed, 0);
+            if (game.getPlayer().getPosition().y - spatial.getWorldTranslation().y <= killDistance + 3) {
+                spatial.move(0, tpf*moveSpeed, 0);
+                
+            } else {
+                spatial.move(0, tpf*moveSpeed*2.5f, 0); //Add more to the speed so that the water can keep up with the player
+                
+            }
+            
             
 //            Debug.log("Distance form water: " + spatial.getWorldTranslation().distance(game.getPlayer().getPosition()));
             
-            if (spatial.getWorldTranslation().distance(game.getPlayer().getPosition()) <= killDistance) {
+            if (game.getPlayer().getPosition().y - spatial.getWorldTranslation().y <= killDistance) {
                 game.doGameOver();
                 
-            } else {
-                spatial.setLocalTranslation(
-                        spatial.getLocalTranslation().clone().interpolate(
-                        new Vector3f(0, game.getPlayer().getPosition().y, spatial.getLocalTranslation().z).subtract(0, killDistance, 0), 0.005f));
             }
             
         }

@@ -1,10 +1,11 @@
 Material My Material : Resources/MatDefs/LightningSky.j3md {
      MaterialParameters {
         ColorMap : Textures/sky.png
-        Blending : 0.70000005
-        CloudDensity : 0.3
+        Blending : 0.5
+        CloudDensity : 0.1
+        CloudSpeed : 0.2
      }
     AdditionalRenderState {
-        Blend Alpha
+      Blend PremultAlpha
     }
 }
