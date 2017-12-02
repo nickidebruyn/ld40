@@ -69,7 +69,7 @@ public class PlayScreen extends AbstractScreen implements SimplePhysics2DGameLis
 
     @Override
     protected void show() {
-        baseApplication.showStats();
+//        baseApplication.showStats();
         keyboardControlInputListener.registerWithInput(inputManager);
     }
 
