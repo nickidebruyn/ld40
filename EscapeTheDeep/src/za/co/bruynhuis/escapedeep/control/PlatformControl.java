@@ -4,7 +4,7 @@
  */
 package za.co.bruynhuis.escapedeep.control;
 
-import com.jme3.math.Vector3f;
+import com.bruynhuis.galago.sprite.physics.RigidBodyControl;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.scene.control.AbstractControl;
@@ -14,13 +14,13 @@ import za.co.bruynhuis.escapedeep.game.Game;
  *
  * @author NideBruyn
  */
-public class OceanControl extends AbstractControl {
+public class PlatformControl extends AbstractControl {
     
     private Game game;
-    private float moveSpeed = 0.5f;
     private final float killDistance;
+    private RigidBodyControl rigidBodyControl;
 
-    public OceanControl(Game game, float killDistance) {
+    public PlatformControl(Game game, float killDistance) {
         this.game = game;
         this.killDistance = killDistance;
     }
@@ -30,17 +30,15 @@ public class OceanControl extends AbstractControl {
         
         if (game.isStarted() && !game.isGameOver() && !game.isPaused()) {
             
-            spatial.move(0, tpf*moveSpeed, 0);
+            if (rigidBodyControl == null) {
+                rigidBodyControl = spatial.getControl(RigidBodyControl.class);
+            }
             
 //            Debug.log("Distance form water: " + spatial.getWorldTranslation().distance(game.getPlayer().getPosition()));
             
-            if (spatial.getWorldTranslation().distance(game.getPlayer().getPosition()) <= killDistance) {
-                game.doGameOver();
-                
-            } else {
-                spatial.setLocalTranslation(
-                        spatial.getLocalTranslation().clone().interpolate(
-                        new Vector3f(0, game.getPlayer().getPosition().y, spatial.getLocalTranslation().z).subtract(0, killDistance, 0), 0.001f));
+            if (game.getPlayer().getPosition().y > rigidBodyControl.getPhysicLocation().y &&
+                    game.getPlayer().getPosition().y - rigidBodyControl.getPhysicLocation().y >= killDistance) {
+                doDestroy();
             }
             
         }
@@ -48,6 +46,13 @@ public class OceanControl extends AbstractControl {
 
     @Override
     protected void controlRender(RenderManager rm, ViewPort vp) {
+        
     }
     
+    private void doDestroy() {
+//        Debug.log("Destroy platform");
+        game.getBaseApplication().getDyn4jAppState().getPhysicsSpace().remove(rigidBodyControl);
+        spatial.removeFromParent();
+        game.addNextRow();
+    }
 }

@@ -20,7 +20,7 @@ import za.co.bruynhuis.escapedeep.screens.PlayScreen;
 public class MainApplication extends Base2DApplication {
 
     public MainApplication() {
-        super("Escape the deep", 480, 800, "escapethedeep.save", null, null, false);
+        super("Escape the deep", 1280, 720, "escapethedeep.save", null, null, false);
     }
 
     public static void main(String[] args) {
@@ -29,7 +29,7 @@ public class MainApplication extends Base2DApplication {
 
     @Override
     protected void preInitApp() {
-        frustumSize = 10f;
+        frustumSize = 7f;
     }
 
     @Override
@@ -52,6 +52,8 @@ public class MainApplication extends Base2DApplication {
         modelManager.loadMaterial("Materials/player.j3m");
         modelManager.loadMaterial("Materials/ground.j3m");
         modelManager.loadMaterial("Materials/ocean.j3m");
+        modelManager.loadMaterial("Materials/platform.j3m");
+        modelManager.loadMaterial("Materials/lightning.j3m");
                 
     }
 

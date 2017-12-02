@@ -1,8 +1,8 @@
 Material My Material : Common/MatDefs/Misc/Unshaded.j3md {
      MaterialParameters {
-        Color : 0.24705882 0.56078434 1.0 0.84
+        Color : 1.0 1.0 1.0 1.0
+        ColorMap : Textures/platform.png
      }
     AdditionalRenderState {
-      Blend Alpha
     }
 }

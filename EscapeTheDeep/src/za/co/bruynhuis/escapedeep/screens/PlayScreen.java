@@ -9,6 +9,8 @@ import com.bruynhuis.galago.listener.KeyboardControlEvent;
 import com.bruynhuis.galago.listener.KeyboardControlInputListener;
 import com.bruynhuis.galago.listener.KeyboardControlListener;
 import com.bruynhuis.galago.screen.AbstractScreen;
+import com.bruynhuis.galago.ui.Label;
+import com.bruynhuis.galago.ui.TextAlign;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Spatial;
 import za.co.bruynhuis.escapedeep.MainApplication;
@@ -25,14 +27,18 @@ public class PlayScreen extends AbstractScreen implements SimplePhysics2DGameLis
     private Player player;
     private MainApplication mainApplication;
     private KeyboardControlInputListener keyboardControlInputListener;
+    private Label bodiesLabel;
     
-    public static float camHeight = 5f;
+    public static float camHeight = 3f;
     public static float cameraMoveHeight = 6f;
     
     @Override
     protected void init() {
         mainApplication = (MainApplication) baseApplication;
 
+        bodiesLabel = new Label(hudPanel, "Bodies: 0", 16);
+        bodiesLabel.setAlignment(TextAlign.LEFT);
+        bodiesLabel.leftTop(0, 0);
         
         keyboardControlInputListener = new KeyboardControlInputListener();
         keyboardControlInputListener.addKeyboardControlListener(this);
@@ -63,6 +69,7 @@ public class PlayScreen extends AbstractScreen implements SimplePhysics2DGameLis
 
     @Override
     protected void show() {
+        baseApplication.showStats();
         keyboardControlInputListener.registerWithInput(inputManager);
     }
 
@@ -92,14 +99,20 @@ public class PlayScreen extends AbstractScreen implements SimplePhysics2DGameLis
     @Override
     public void update(float tpf) {
         if (isActive()) {
+            
+            bodiesLabel.setText("Bodies: " + mainApplication.getDyn4jAppState().getPhysicsSpace().getBodyCount());
             //update the camera
 //            camera.setLocation(new Vector3f(player.getPosition().x, game.getStartPosition().y + 3, 10));
             
-            if (player.getPosition().y > cameraMoveHeight) {
-                camera.setLocation(camera.getLocation().interpolate(camera.getLocation().clone().setX(0).setY(player.getPosition().y + PlayScreen.camHeight), 0.025f));
-            } else {
-                camera.setLocation(camera.getLocation().interpolate(camera.getLocation().clone().setX(0).setY(PlayScreen.camHeight), 0.025f));
-            }
+            
+            camera.setLocation(camera.getLocation().interpolate(camera.getLocation().clone().setX(0).setY(player.getPosition().y + PlayScreen.camHeight), 0.015f));            
+            
+            
+//            if (player.getPosition().y > cameraMoveHeight) {
+//                camera.setLocation(camera.getLocation().interpolate(camera.getLocation().clone().setX(0).setY(player.getPosition().y + PlayScreen.camHeight), 0.025f));
+//            } else {
+//                camera.setLocation(camera.getLocation().interpolate(camera.getLocation().clone().setX(0).setY(PlayScreen.camHeight), 0.025f));
+//            }
         }
     }
 

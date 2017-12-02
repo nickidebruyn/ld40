@@ -34,10 +34,10 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
     private Sprite sprite;
     private RigidBodyControl rigidBodyControl;
-    private float jumpForce = 16.0f;
+    private float jumpForce = 15.0f;
     private boolean onGround = false;
     private boolean left, right = false;
-    private float moveSpeed = 3f;
+    private float moveSpeed = 4f;
     private Timer jumpDelayTimer = new Timer(0.5f);
     private float gravity = 3f;
 
@@ -49,12 +49,12 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
     protected void init() {
         lives = 0;
 
-        sprite = new Sprite(Platform2DGame.TYPE_PLAYER, 1f, 1f);
+        sprite = new Sprite(Platform2DGame.TYPE_PLAYER, 0.9f, 0.9f);
         sprite.setMaterial(game.getBaseApplication().getModelManager().getMaterial("Materials/player.j3m"));
         sprite.setQueueBucket(RenderQueue.Bucket.Transparent);
-        sprite.move(0, 0, 1f);
+        sprite.move(0, 0, 0f);
 
-        rigidBodyControl = new RigidBodyControl(new CircleCollisionShape(0.5f), 1f);
+        rigidBodyControl = new RigidBodyControl(new CircleCollisionShape(sprite.getWidth()*0.5f), 1f);
         rigidBodyControl.setRestitution(0f);
         rigidBodyControl.setFriction(0.1f);
         playerNode.addControl(rigidBodyControl);
@@ -179,7 +179,7 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
     @Override
     protected float getSize() {
-        return 1f;
+        return sprite.getWidth();
     }
 
     public void doLevelCompleteAction() {
