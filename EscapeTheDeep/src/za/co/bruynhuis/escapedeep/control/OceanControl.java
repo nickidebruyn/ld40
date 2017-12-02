@@ -40,7 +40,7 @@ public class OceanControl extends AbstractControl {
             } else {
                 spatial.setLocalTranslation(
                         spatial.getLocalTranslation().clone().interpolate(
-                        new Vector3f(0, game.getPlayer().getPosition().y, spatial.getLocalTranslation().z).subtract(0, killDistance, 0), 0.001f));
+                        new Vector3f(0, game.getPlayer().getPosition().y, spatial.getLocalTranslation().z).subtract(0, killDistance, 0), 0.005f));
             }
             
         }

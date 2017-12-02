@@ -3,6 +3,6 @@ Material My Material : Common/MatDefs/Misc/Unshaded.j3md {
         Color : 0.24705882 0.56078434 1.0 0.84
      }
     AdditionalRenderState {
-      Blend Alpha
+      Blend PremultAlpha
     }
 }
