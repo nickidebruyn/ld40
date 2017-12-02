@@ -11,12 +11,13 @@ import com.bruynhuis.galago.control.tween.SpatialAccessor;
 import com.bruynhuis.galago.games.platform2d.Platform2DGame;
 import com.bruynhuis.galago.games.simplephysics2d.SimplePhysics2DGame;
 import com.bruynhuis.galago.games.simplephysics2d.SimplePhysics2DPlayer;
-import com.bruynhuis.galago.sprite.Sprite;
+import com.bruynhuis.galago.sprite.AnimatedSprite;
+import com.bruynhuis.galago.sprite.Animation;
 import com.bruynhuis.galago.sprite.physics.PhysicsCollisionListener;
 import com.bruynhuis.galago.sprite.physics.PhysicsSpace;
 import com.bruynhuis.galago.sprite.physics.PhysicsTickListener;
 import com.bruynhuis.galago.sprite.physics.RigidBodyControl;
-import com.bruynhuis.galago.sprite.physics.shape.CircleCollisionShape;
+import com.bruynhuis.galago.sprite.physics.shape.BoxCollisionShape;
 import com.bruynhuis.galago.sprite.physics.shape.CollisionShape;
 import com.bruynhuis.galago.util.Timer;
 import com.jme3.math.Vector3f;
@@ -32,14 +33,14 @@ import com.jme3.scene.control.AbstractControl;
  */
 public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionListener, PhysicsTickListener {
 
-    private Sprite sprite;
+    private AnimatedSprite sprite;
     private RigidBodyControl rigidBodyControl;
-    private float jumpForce = 15.0f;
+    private float jumpForce = 14.0f;
     private boolean onGround = false;
     private boolean left, right = false;
     private float moveSpeed = 4f;
     private Timer jumpDelayTimer = new Timer(0.5f);
-    private float gravity = 3f;
+    private float gravity = 2.5f;
 
     public Player(SimplePhysics2DGame simplePhysics2DGame) {
         super(simplePhysics2DGame);
@@ -49,12 +50,17 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
     protected void init() {
         lives = 0;
 
-        sprite = new Sprite(Platform2DGame.TYPE_PLAYER, 0.9f, 0.9f);
+        sprite = new AnimatedSprite(Platform2DGame.TYPE_PLAYER, 1.2f, 1.2f, 4, 3, 10);
         sprite.setMaterial(game.getBaseApplication().getModelManager().getMaterial("Materials/player.j3m"));
+        game.fixTexture(sprite.getMaterial().getTextureParam("ColorMap"));
         sprite.setQueueBucket(RenderQueue.Bucket.Transparent);
         sprite.move(0, 0, 0f);
 
-        rigidBodyControl = new RigidBodyControl(new CircleCollisionShape(sprite.getWidth()*0.5f), 1f);
+        sprite.addAnimation(new Animation("idle", 0, 4, 10));
+        sprite.addAnimation(new Animation("walk", 5, 9, 10));
+        sprite.addAnimation(new Animation("jump", 10, 10, 10));
+
+        rigidBodyControl = new RigidBodyControl(new BoxCollisionShape(0.6f, 1f), 1f);
         rigidBodyControl.setRestitution(0f);
         rigidBodyControl.setFriction(0.1f);
         playerNode.addControl(rigidBodyControl);
@@ -81,6 +87,32 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
                     }
 
+                    
+                    if (left && !right) {
+                        sprite.flipHorizontal(true);
+
+                        if (onGround) {
+                            sprite.play("walk", true, false, true);
+                        } else {
+                            sprite.play("jump", false, false, true);
+                        }
+
+                    } else if (!left && right) {
+
+                        sprite.flipHorizontal(false);
+                        if (onGround) {
+                            sprite.play("walk", true, false, true);
+                        } else {
+                            sprite.play("jump", false, false, true);
+                        }
+
+                    } else {
+                        if (onGround) {
+                            sprite.play("idle", true, false, true);
+                        } else {
+                            sprite.play("jump", true, false, true);
+                        }
+                    }
                 }
             }
 
@@ -93,8 +125,9 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
         game.getBaseApplication().getDyn4jAppState().getPhysicsSpace().addPhysicsCollisionListener(this);
         game.getBaseApplication().getDyn4jAppState().getPhysicsSpace().addPhysicsTickListener(this);
 
+        sprite.play("idle", true, false, true);
     }
-    
+
     private void loadWeather() {
         Spatial rain = game.getBaseApplication().getModelManager().getModel("Models/rain.j3o");
         rain.setLocalTranslation(0, 10, 2);
@@ -141,23 +174,25 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
     public void setLeft(boolean left) {
         this.left = left;
+
     }
 
     public void setRight(boolean right) {
         this.right = right;
+
     }
 
     public void collision(Spatial spatialA, CollisionShape collisionShapeA, Spatial spatialB, CollisionShape collisionShapeB, Vector3f point) {
         float dist = getPosition().distance(point.multLocal(1, 1, 0));
 //        log("Point: " + point + ";  Player: " + getPosition());
 //        log("On Gound dist: " + dist);
-        if (point.y <= getPosition().y - dist) {
+//        if (point.y <= getPosition().y - dist) {
 
-            if (jumpDelayTimer.finished()) {
-                onGround = true;
-            }
-
+        if (jumpDelayTimer.finished()) {
+            onGround = true;
         }
+
+//        }
 
     }
 
@@ -210,10 +245,10 @@ public class Player extends SimplePhysics2DPlayer implements PhysicsCollisionLis
 
         if (left && !right) {
             rigidBodyControl.move(-tpf * moveSpeed, 0);
-
+           
         } else if (!left && right) {
             rigidBodyControl.move(tpf * moveSpeed, 0);
-
+            
         }
 
         //Correct the rotation so that the player don;t twist
