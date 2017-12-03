@@ -16,7 +16,7 @@ import za.co.bruynhuis.escapedeep.game.Game;
 public class PickupControl extends AbstractControl {
     
     private Game game;
-    private final float killDistance;
+    private float killDistance;
 
     public PickupControl(Game game, float killDistance) {
         this.game = game;

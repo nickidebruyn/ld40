@@ -6,6 +6,7 @@ package za.co.bruynhuis.escapedeep.control;
 
 import com.bruynhuis.galago.sprite.Sprite;
 import com.bruynhuis.galago.sprite.physics.RigidBodyControl;
+import com.bruynhuis.galago.util.Timer;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -16,20 +17,23 @@ import za.co.bruynhuis.escapedeep.game.Game;
  *
  * @author NideBruyn
  */
-public class BulletControl extends AbstractControl {
+public class ChildControl extends AbstractControl {
 
     private Game game;
     private Sprite sprite;
     private RigidBodyControl rigidBodyControl;
     private float moveSpeed;
     private Vector3f direction;
+    private float maxXPos;
     private float killDistance;
+    private Timer turnDelay = new Timer(100);
 
-    public BulletControl(Game game, Sprite sprite, float speed, Vector3f direction, float killDistance) {
+    public ChildControl(Game game, Sprite sprite, float speed, Vector3f direction, float maxXPos, float killDistance) {
         this.game = game;
         this.sprite = sprite;
         this.moveSpeed = speed;
         this.direction = direction;
+        this.maxXPos = maxXPos;
         this.killDistance = killDistance;
     }
 
@@ -45,16 +49,38 @@ public class BulletControl extends AbstractControl {
             //First we need to get this
             if (rigidBodyControl == null) {
                 rigidBodyControl = sprite.getControl(RigidBodyControl.class);
+                turnDelay.start();
             }
 
             //Now we can execute the movement logic
             if (rigidBodyControl != null) {
-                rigidBodyControl.getBody().setLinearVelocity(direction.x * moveSpeed, direction.y * moveSpeed);
 
-                if (game.getPlayer().getPosition().y > rigidBodyControl.getPhysicLocation().y &&
-                    game.getPlayer().getPosition().y - rigidBodyControl.getPhysicLocation().y >= killDistance) {
-                doDie();
-            }
+                turnDelay.update(tpf);
+
+                if (direction.x > 0) {
+                    sprite.flipHorizontal(false);
+
+                    //Check to turn
+                    if (rigidBodyControl.getPhysicLocation().x >= maxXPos) {
+                        doTurn();
+                    }
+
+                } else {
+                    sprite.flipHorizontal(true);
+
+                    //Check to turn
+                    if (rigidBodyControl.getPhysicLocation().x <= -maxXPos) {
+                        doTurn();
+                    }
+
+                }
+
+                rigidBodyControl.getBody().setLinearVelocity(direction.x * moveSpeed, rigidBodyControl.getLinearVelocity().y);
+
+                if (game.getPlayer().getPosition().y > rigidBodyControl.getPhysicLocation().y
+                        && game.getPlayer().getPosition().y - rigidBodyControl.getPhysicLocation().y >= killDistance) {
+                    doDie();
+                }
             }
         }
 
@@ -73,10 +99,18 @@ public class BulletControl extends AbstractControl {
     }
 
     public void doDie() {
-        System.out.println(" ********* Removing bullet");
+        System.out.println(" ********* Removing child");
+//        game.getBaseApplication().getEffectManager().doEffect("blood", sprite.getLocalTranslation().clone());
         game.getBaseApplication().getDyn4jAppState().getPhysicsSpace().remove(rigidBodyControl);
         sprite.removeFromParent();
 
     }
-    
+
+    public void doTurn() {
+        if (turnDelay.finished()) {
+            direction = direction.multLocal(-1, 0, 0);
+            turnDelay.reset();
+        }        
+
+    }
 }

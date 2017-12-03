@@ -21,13 +21,18 @@ public class PlayerScorePanel extends Panel {
     private Label scoreLabel;
     private Label bulletLabel;
     private Image bulletImage;
+    private Image savedImage;
 
     public PlayerScorePanel(Panel parent) {
         super(parent, null, parent.getWidth(), 60);
         
-        scoreLabel = new Label(this, "Score: 0", 22);
+        scoreLabel = new Label(this, "x ", 22);
         scoreLabel.setAlignment(TextAlign.LEFT);
-        scoreLabel.leftCenter(10, 0);
+        scoreLabel.leftCenter(60, 0);
+        
+        savedImage = new Image(this, "Interface/baby.png", 54, 54, true);
+        savedImage.leftCenter(10, 16);
+        fixTexture(savedImage.getPicture().getMaterial().getTextureParam("Texture"));
         
         bulletLabel = new Label(this, "Bullet", 22);
         bulletLabel.setAlignment(TextAlign.RIGHT);
@@ -48,7 +53,7 @@ public class PlayerScorePanel extends Panel {
     }
     
     public void setScore(int score) {
-        scoreLabel.setText("Score: " + score);
+        scoreLabel.setText("x " + score + " saved");
     }
     
     public void setBulletActive(boolean visible) {

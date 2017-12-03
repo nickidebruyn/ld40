@@ -8,6 +8,7 @@ import com.bruynhuis.galago.resource.ScreenManager;
 import com.bruynhuis.galago.resource.SoundManager;
 import com.bruynhuis.galago.resource.TextureManager;
 import com.bruynhuis.galago.ui.FontStyle;
+import za.co.bruynhuis.escapedeep.screens.IntroScreen;
 import za.co.bruynhuis.escapedeep.screens.PlayScreen;
 
 /**
@@ -35,7 +36,7 @@ public class MainApplication extends Base2DApplication {
 
     @Override
     protected void postInitApp() {
-        showScreen("play");
+        showScreen("intro");
     }
 
     @Override
@@ -45,7 +46,9 @@ public class MainApplication extends Base2DApplication {
 
     @Override
     protected void initScreens(ScreenManager screenManager) {
+        screenManager.loadScreen("intro", new IntroScreen());
         screenManager.loadScreen("play", new PlayScreen());
+        
     }
 
     @Override
@@ -60,25 +63,35 @@ public class MainApplication extends Base2DApplication {
         modelManager.loadMaterial("Materials/lightning.j3m");
         
         modelManager.loadModel("Models/rain.j3o");
+        modelManager.loadModel("Models/fireball.j3o");
                 
     }
 
     @Override
     protected void initSound(SoundManager soundManager) {
         soundManager.loadMusic("background", "Sounds/SoulfulExpansion.ogg");
+        soundManager.loadMusic("intro", "Sounds/intro.ogg");
+        soundManager.loadMusic("rain", "Sounds/rain.ogg");
         
         soundManager.loadSoundFx("button", "Sounds/button.ogg");
         soundManager.loadSoundFx("thunder", "Sounds/thunder.ogg");
         soundManager.loadSoundFx("walk", "Sounds/walk.ogg");
         soundManager.loadSoundFx("jump", "Sounds/jump.ogg");
         soundManager.loadSoundFx("pickup", "Sounds/pickup.ogg");
+        soundManager.loadSoundFx("pickuplong", "Sounds/pickuplong.ogg");
         soundManager.loadSoundFx("gameover", "Sounds/gameover.ogg");
         soundManager.loadSoundFx("shoot", "Sounds/shoot.ogg");
+        soundManager.loadSoundFx("bumptop", "Sounds/bumptop.ogg");
+        soundManager.loadSoundFx("thunder1", "Sounds/thunder1.ogg");
+        soundManager.loadSoundFx("thunder2", "Sounds/thunder2.ogg");
         
     }
 
     @Override
     protected void initEffect(EffectManager effectManager) {
+        effectManager.loadEffect("gold", "Models/gold-effect.j3o");
+        effectManager.loadEffect("blood", "Models/blood-effect.j3o");
+        effectManager.loadEffect("bump", "Models/bump-effect.j3o");
     }
 
     @Override

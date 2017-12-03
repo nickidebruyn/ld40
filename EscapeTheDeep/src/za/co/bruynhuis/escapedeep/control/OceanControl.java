@@ -41,7 +41,7 @@ public class OceanControl extends AbstractControl {
 //            Debug.log("Distance form water: " + spatial.getWorldTranslation().distance(game.getPlayer().getPosition()));
             
             if (game.getPlayer().getPosition().y - spatial.getWorldTranslation().y <= killDistance) {
-                game.doGameOver();
+                game.getPlayer().doDamage(5);
                 
             }
             

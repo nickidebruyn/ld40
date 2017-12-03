@@ -4,12 +4,16 @@
  */
 package za.co.bruynhuis.escapedeep.ui;
 
+import aurelienribon.tweenengine.BaseTween;
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenCallback;
 import com.bruynhuis.galago.ui.FontStyle;
 import com.bruynhuis.galago.ui.Image;
 import com.bruynhuis.galago.ui.Label;
 import com.bruynhuis.galago.ui.TextAlign;
 import com.bruynhuis.galago.ui.listener.TouchButtonListener;
 import com.bruynhuis.galago.ui.panel.PopupDialog;
+import com.bruynhuis.galago.ui.tween.WidgetAccessor;
 import com.bruynhuis.galago.ui.window.Window;
 import com.bruynhuis.galago.util.SpatialUtils;
 import com.jme3.material.MatParam;
@@ -22,6 +26,8 @@ import com.jme3.texture.Texture;
  * @author NideBruyn
  */
 public class GameOverDialog extends PopupDialog {
+    
+    protected ShowListener showListener;
     
     private Label info;
     private Label scoreLabel;
@@ -95,6 +101,23 @@ public class GameOverDialog extends PopupDialog {
         playButton.addTouchButtonListener(buttonListener);
     }
     
+    public void addShowListener(ShowListener showListener) {
+        this.showListener = showListener;
+        
+    }
+    
+    protected void fireShowShownListener() {
+        if (showListener != null) {
+            showListener.shown();
+        }
+    }
+    
+    protected void fireShowHiddenListener() {
+        if (showListener != null) {
+            showListener.hidden();
+        }
+    }
+    
     public void show(int best, int score) {
         super.show();
         
@@ -111,7 +134,30 @@ public class GameOverDialog extends PopupDialog {
             playerHappyImage.setVisible(true);
             setTitle("HIGH SCORE");
         }
+        
+        setTransparency(0);
+        
+        Tween.to(this, WidgetAccessor.OPACITY, 2f)
+                .target(1f)
+                .setCallback(new TweenCallback() {
+                    public void onEvent(int i, BaseTween<?> bt) {
+                        fireShowShownListener();
+                    }
+                })
+                .start(window.getApplication().getTweenManager());    
     }
-    
+
+//    @Override
+//    public void hide() {
+//        Tween.to(this, WidgetAccessor.OPACITY, 1f)
+//                .target(0f)
+//                .setCallback(new TweenCallback() {
+//                    public void onEvent(int i, BaseTween<?> bt) {
+//                        GameOverDialog.super.hide();
+//                        fireShowHiddenListener();
+//                    }
+//                })
+//                .start(window.getApplication().getTweenManager());    
+//    }
     
 }

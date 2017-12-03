@@ -4,11 +4,15 @@
  */
 package za.co.bruynhuis.escapedeep.ui;
 
+import aurelienribon.tweenengine.BaseTween;
+import aurelienribon.tweenengine.Tween;
+import aurelienribon.tweenengine.TweenCallback;
 import com.bruynhuis.galago.ui.FontStyle;
 import com.bruynhuis.galago.ui.Image;
 import com.bruynhuis.galago.ui.Label;
 import com.bruynhuis.galago.ui.listener.TouchButtonListener;
 import com.bruynhuis.galago.ui.panel.PopupDialog;
+import com.bruynhuis.galago.ui.tween.WidgetAccessor;
 import com.bruynhuis.galago.ui.window.Window;
 import com.jme3.math.ColorRGBA;
 
@@ -17,6 +21,9 @@ import com.jme3.math.ColorRGBA;
  * @author NideBruyn
  */
 public class InfoDialog extends PopupDialog {
+    
+    protected ShowListener showListener;
+    
     
     private Label info;
     private LargeButton exitButton;
@@ -33,7 +40,7 @@ public class InfoDialog extends PopupDialog {
         title.setTextColor(ColorRGBA.White);
         title.centerAt(0, 210);
         
-        info = new Label(this, "This game is all about survival. \nJump and go up. Do not drown.\nHere are the controls.", 300, 300, new FontStyle(16));
+        info = new Label(this, "Save as many children as you can. \nJump and go up. Do not drown.\nHere are the controls.", 300, 300, new FontStyle(16));
         info.setTextColor(ColorRGBA.Orange);
         info.centerAt(0, 140);
         
@@ -56,5 +63,37 @@ public class InfoDialog extends PopupDialog {
     
     public void addPlayButtonListener(TouchButtonListener buttonListener) {
         playButton.addTouchButtonListener(buttonListener);
+    }
+    
+    public void addShowListener(ShowListener showListener) {
+        this.showListener = showListener;
+        
+    }
+    
+    protected void fireShowShownListener() {
+        if (showListener != null) {
+            showListener.shown();
+        }
+    }
+    
+    protected void fireShowHiddenListener() {
+        if (showListener != null) {
+            showListener.hidden();
+        }
+    }
+    
+    public void show(int best, int score) {
+        super.show();
+        
+        setTransparency(0);
+        
+        Tween.to(this, WidgetAccessor.OPACITY, 2f)
+                .target(1f)
+                .setCallback(new TweenCallback() {
+                    public void onEvent(int i, BaseTween<?> bt) {
+                        fireShowShownListener();
+                    }
+                })
+                .start(window.getApplication().getTweenManager());    
     }
 }
