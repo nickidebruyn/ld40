@@ -1,0 +1,12 @@
+Material My Material : Resources/MatDefs/SpriteShader.j3md {
+     MaterialParameters {
+        Texture : Repeat Textures/line.png
+        TranslateUV : true
+        TranslateAmount : 0 -0.5
+        AlphaDiscardThreshold : 0.3
+        Color : 0.94 0.94 0.94 1.0
+     }
+    AdditionalRenderState {
+      Blend AlphaAdditive
+    }
+}

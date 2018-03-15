@@ -22,7 +22,7 @@ import za.co.bruynhuis.escapedeep.screens.PlayScreen;
 public class MainApplication extends Base2DApplication {
 
     public MainApplication() {
-        super("Escape the deep", 1280, 720, "escapethedeep.save", "Interface/Fonts/GameBoy.ttf", null, false);
+        super("Escape the deep", 1280, 720, "escapethedeep.save", "Interface/Fonts/GameBoy.ttf", null, true);
     }
 
     public static void main(String[] args) {
